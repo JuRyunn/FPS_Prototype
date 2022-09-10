@@ -11,6 +11,12 @@ public class MovementCharactorController : MonoBehaviour
     private float moveSpeed; // 이동속도
     private Vector3 moveForce; // 이동 힘
 
+    [SerializeField]
+    private float jumpForce; // 점프력
+
+    [SerializeField]
+    private float gravity; // 중력 계수
+
     public float MoveSpeed
     {
         set => moveSpeed = Mathf.Max(0, value);
@@ -26,6 +32,12 @@ public class MovementCharactorController : MonoBehaviour
 
     private void Update()
     {
+        // 허공일 경우 중력만큼 y축 이동속도 감소
+        if (!characterController.isGrounded)
+        {
+            moveForce.y += gravity * Time.deltaTime;
+        }
+
         // 초당 moveForce 속력으로 이동
         characterController.Move(moveForce * Time.deltaTime);
     }
@@ -38,5 +50,14 @@ public class MovementCharactorController : MonoBehaviour
         // 이동 힘= 이동방향 * 속도
         moveForce = new Vector3(direction.x * moveSpeed, moveForce.y, direction.z * moveSpeed);
 
+    }
+
+    public void Jump()
+    {
+        // 캐릭터가 바닥에 있을 경우만 점프
+        if (characterController.isGrounded)
+        {
+            moveForce.y = jumpForce;
+        }
     }
 }
