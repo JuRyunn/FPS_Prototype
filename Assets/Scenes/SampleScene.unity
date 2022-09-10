@@ -403,6 +403,8 @@ GameObject:
   - component: {fileID: 728961167}
   - component: {fileID: 728961169}
   - component: {fileID: 728961168}
+  - component: {fileID: 728961171}
+  - component: {fileID: 728961170}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -453,6 +455,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfd158273039d38438c5982514b335f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &728961170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 728961166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eebdcb3a55d1884a8c7ad0c47610ff8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 3
+--- !u!143 &728961171
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 728961166}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &795701587 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100012, guid: 182b7f11db452bc458d35a6c9eced06f, type: 3}

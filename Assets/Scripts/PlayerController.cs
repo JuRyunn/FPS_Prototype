@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Input keyCodes")]
+    [SerializeField]
+    private KeyCode keyCodeRun = KeyCode.LeftShift;
+
     private RotateToMouse rotateToMouse; // 마우스 이동으로 카메라 회전
+    private MovementCharactorController movement; // 키보드 입력으로 캐릭터 이동
+    private Status status; // 이동속도 등의 캐릭터 정보
 
     private void Awake()
     {
@@ -14,11 +20,14 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         rotateToMouse = GetComponent<RotateToMouse>();
+        movement = GetComponent<MovementCharactorController>();
+        status= GetComponent<Status>();
     }
 
     private void Update()
     {
         UpdateRotate();
+        UpdateMove();
     }
 
     private void UpdateRotate()
@@ -27,5 +36,24 @@ public class PlayerController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y");
 
         rotateToMouse.UpdateRotate(mouseX, mouseY);
+    }
+
+    private void UpdateMove()
+    {
+        float x = Input.GetAxisRaw("Horizontal");
+        float z = Input.GetAxisRaw("Vertical");
+
+        // 이동중 일 경우 걷기 or 뛰기
+        if (x !=0 || z!= 0)
+        {
+            bool isRun = false;
+
+            // 옆 뒤로 이동할 경우 달릴 수 없음
+            if (z > 0) isRun = Input.GetKey(keyCodeRun);
+            
+            movement.MoveSpeed= isRun == true ? status.RunSpeed : status.WalkSpeed;
+        }
+
+        movement.MoveTo(new Vector3(x, 0, z));
     }
 }
