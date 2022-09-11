@@ -8,6 +8,10 @@ public class WeaponAssultRiffle : MonoBehaviour
     [SerializeField]
     private GameObject muzzleFlashEffect; // 총구 이펙트 
 
+    [Header("Spawn Points")]
+    [SerializeField]
+    private Transform casingSpawnPoint; // 탄피 생성 위치
+
     [Header("Audio Clips")]
     [SerializeField]
     private AudioClip audioClipTakeOutWeapon; // 무기장착
@@ -23,11 +27,13 @@ public class WeaponAssultRiffle : MonoBehaviour
 
     private AudioSource audioSource;
     private PlayerAnimatorController animator;
+    private ChasingMemoryPool casingMemoryPool; // 탄피 생성 후 활성,비활성 관리
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
         animator = GetComponentInParent<PlayerAnimatorController>();
+        casingMemoryPool = GetComponent<ChasingMemoryPool>();
     }
 
     private void OnEnable()
@@ -93,6 +99,7 @@ public class WeaponAssultRiffle : MonoBehaviour
             animator.Play("Fire", -1, 0); // 무기 애니메이션 재생
             StartCoroutine("OnMuzzleFlashEffect"); // 총구 이펙트 재생
             PlaySound(audioClipFire); // 공격소리 재생
+            casingMemoryPool.SpawnCasing(casingSpawnPoint.position, transform.right);
         }
     }
 
