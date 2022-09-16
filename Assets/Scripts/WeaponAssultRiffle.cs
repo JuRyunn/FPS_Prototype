@@ -5,10 +5,16 @@ using UnityEngine;
 [System.Serializable]
 public class AmmoEvent : UnityEngine.Events.UnityEvent<int, int> { }
 
+[System.Serializable]
+public class MagazineEvent : UnityEngine.Events.UnityEvent<int> { }
+
 public class WeaponAssultRiffle : MonoBehaviour
 {
     [HideInInspector]
     public AmmoEvent onAmmoEvent = new AmmoEvent();
+
+    [HideInInspector]
+    public MagazineEvent onMagazineEvent = new MagazineEvent();
 
     [Header("Fire Effects")]
     [SerializeField]
@@ -39,6 +45,8 @@ public class WeaponAssultRiffle : MonoBehaviour
     private ChasingMemoryPool casingMemoryPool; // 탄피 생성 후 활성,비활성 관리
 
     public WeaponName WeaponName => weaponSetting.weaponName;
+    public int CurrentMagazine => weaponSetting.currentMagazine;
+    public int MaxMagazine => weaponSetting.maxMagazine;
 
     private void Awake()
     {
@@ -47,6 +55,9 @@ public class WeaponAssultRiffle : MonoBehaviour
         casingMemoryPool = GetComponent<ChasingMemoryPool>();
 
         // 첫 탄창은 max
+        weaponSetting.currentMagazine = weaponSetting.maxMagazine;
+
+        // 첫 탄 수는 max
         weaponSetting.CurrentAmmo = weaponSetting.maxAmmo;
     }
 
@@ -56,14 +67,17 @@ public class WeaponAssultRiffle : MonoBehaviour
         PlaySound(audioClipTakeOutWeapon);
         muzzleFlashEffect.SetActive(false);
 
+        // 무기 활성화 되는 경우 탄창 갱신
+        onMagazineEvent.Invoke(weaponSetting.currentMagazine);
+
         // 무기가 활성화 되는 경우 탄 수 갱신
         onAmmoEvent.Invoke(weaponSetting.CurrentAmmo, weaponSetting.maxAmmo);
     }
 
     public void StartWeaponAction(int type= 0)
     {
-
-        if (isReload == true) return;
+        // 현재 재장전 중이거나 탄창 수 0이면 재장전 불가능
+        if (isReload == true || weaponSetting.currentMagazine <= 0) return;
 
         // 공격시작: 마우스 왼쪽버튼
         if (type == 0)
@@ -156,6 +170,10 @@ public class WeaponAssultRiffle : MonoBehaviour
             if(audioSource.isPlaying == false && animator.CurrentAnimatonIs("Movement"))
             {
                 isReload = false;
+
+                // 현재 탄창 수 1감소함과 동시에 바뀐 탄창 정보 업데이트
+                weaponSetting.currentMagazine--;
+                onMagazineEvent.Invoke(weaponSetting.currentMagazine);
 
                 // 현재 탄 수 최대 설정
                 // 바뀐 탄 수 정보 TextMeshPro에 업데이트
