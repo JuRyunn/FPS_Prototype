@@ -17,8 +17,18 @@ public class PlayerAnimatorController : MonoBehaviour
         get => animator.GetFloat("movementSpeed");
     }
 
+    public void onReload()
+    {
+        animator.SetTrigger("OnReload");
+    }
+
     public void Play(string stateName, int layer, float normalizedTime)
     {
         animator.Play(stateName, layer, normalizedTime);
+    }
+
+    public bool CurrentAnimatonIs(string name)
+    {
+        return animator.GetCurrentAnimatorStateInfo(0).IsName(name);
     }
 }

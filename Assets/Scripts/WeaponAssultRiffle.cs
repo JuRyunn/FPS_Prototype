@@ -24,12 +24,15 @@ public class WeaponAssultRiffle : MonoBehaviour
 
     [SerializeField]
     private AudioClip audioClipFire; // 공격소리
-    
+
+    [SerializeField]
+    private AudioClip audioClipReload; // 재장전 사운드
 
     [Header("Weapon Setting")]
     [SerializeField]
     private WeaponSetting weaponSetting; // 무기설정
     private float lastAttackTime = 0; // 마지막 발사시간 체크
+    private bool isReload = false; // 재장전 여부 체크
 
     private AudioSource audioSource;
     private PlayerAnimatorController animator;
@@ -59,10 +62,12 @@ public class WeaponAssultRiffle : MonoBehaviour
 
     public void StartWeaponAction(int type= 0)
     {
-        // 공격시작: 마우스 왼쪽버튼
-        if(type == 0)
-        {
 
+        if (isReload == true) return;
+
+        // 공격시작: 마우스 왼쪽버튼
+        if (type == 0)
+        {
             // 연속공격
             if(weaponSetting.isAutomaticAttack == true)
             {
@@ -74,7 +79,7 @@ public class WeaponAssultRiffle : MonoBehaviour
             {
                 OnAttack();
             }
-        }
+        }  
     }
 
     public void StopWeaponAction(int type= 0)
@@ -85,6 +90,16 @@ public class WeaponAssultRiffle : MonoBehaviour
         {
             StopCoroutine("OnAttackLoop");
         }
+    }
+
+    public void startReload()
+    {
+        // 재장전 시엔 재장전 불가능
+        if (isReload == true) return;
+        
+        // "R" 키를 통해 재장전
+        StopWeaponAction();
+        StartCoroutine("OnReload");
     }
 
     private IEnumerator OnAttackLoop()
@@ -124,6 +139,33 @@ public class WeaponAssultRiffle : MonoBehaviour
             StartCoroutine("OnMuzzleFlashEffect"); // 총구 이펙트 재생
             PlaySound(audioClipFire); // 공격소리 재생
             casingMemoryPool.SpawnCasing(casingSpawnPoint.position, transform.right);
+        }
+    }
+
+    private IEnumerator OnReload()
+    {
+        isReload = true;
+
+        animator.onReload();
+        PlaySound(audioClipReload);
+
+        while (true)
+        {
+            // 사운드 재생이 아닌 애니메이션이 movement일 경우
+            // 재장전 애니메이션 재생 종료
+            if(audioSource.isPlaying == false && animator.CurrentAnimatonIs("Movement"))
+            {
+                isReload = false;
+
+                // 현재 탄 수 최대 설정
+                // 바뀐 탄 수 정보 TextMeshPro에 업데이트
+                weaponSetting.CurrentAmmo = weaponSetting.maxAmmo;
+                onAmmoEvent.Invoke(weaponSetting.CurrentAmmo, weaponSetting.maxAmmo);
+
+                yield break;
+            }
+
+            yield return null;
         }
     }
 
