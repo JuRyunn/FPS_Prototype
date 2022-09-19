@@ -24,6 +24,9 @@ public class WeaponAssultRiffle : MonoBehaviour
     [SerializeField]
     private Transform casingSpawnPoint; // 탄피 생성 위치
 
+    [SerializeField]
+    private Transform bulletSpawnPoint; // 총알 생성 위치
+
     [Header("Audio Clips")]
     [SerializeField]
     private AudioClip audioClipTakeOutWeapon; // 무기장착
@@ -43,6 +46,8 @@ public class WeaponAssultRiffle : MonoBehaviour
     private AudioSource audioSource;
     private PlayerAnimatorController animator;
     private ChasingMemoryPool casingMemoryPool; // 탄피 생성 후 활성,비활성 관리
+    private ImpactMemoryPool impactMemoryPool; // 공격 효과 생성 후 활성, 비활성 관리
+    private Camera mainCamera; // 광선 발사
 
     public WeaponName WeaponName => weaponSetting.weaponName;
     public int CurrentMagazine => weaponSetting.currentMagazine;
@@ -53,6 +58,9 @@ public class WeaponAssultRiffle : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         animator = GetComponentInParent<PlayerAnimatorController>();
         casingMemoryPool = GetComponent<ChasingMemoryPool>();
+        impactMemoryPool= GetComponent<ImpactMemoryPool>(); 
+        
+        mainCamera= Camera.main;
 
         // 첫 탄창은 max
         weaponSetting.currentMagazine = weaponSetting.maxMagazine;
@@ -153,6 +161,9 @@ public class WeaponAssultRiffle : MonoBehaviour
             StartCoroutine("OnMuzzleFlashEffect"); // 총구 이펙트 재생
             PlaySound(audioClipFire); // 공격소리 재생
             casingMemoryPool.SpawnCasing(casingSpawnPoint.position, transform.right);
+
+            // 광선을 발사해 원하는 위치 공격
+            TwoStepRayCast();
         }
     }
 
@@ -199,5 +210,32 @@ public class WeaponAssultRiffle : MonoBehaviour
         muzzleFlashEffect.SetActive(true);
         yield return new WaitForSeconds(weaponSetting.attackRate * 0.3f);
         muzzleFlashEffect.SetActive(false);
+    }
+
+    private void TwoStepRayCast()
+    {
+        Ray ray;
+        RaycastHit hit;
+        Vector3 targetPoint = Vector3.zero;
+
+        ray = mainCamera.ViewportPointToRay(Vector2.one * 0.5f);
+
+        if (Physics.Raycast(ray, out hit, weaponSetting.attackDistance))
+        {
+            targetPoint = hit.point;
+        }
+        else
+        {
+            targetPoint= ray.origin + ray.direction * weaponSetting.attackDistance;
+        }
+        Debug.DrawRay(ray.origin, ray.direction * weaponSetting.attackDistance, Color.red);
+
+        Vector3 attackDirection = (targetPoint - bulletSpawnPoint.position).normalized;
+
+        if (Physics.Raycast(bulletSpawnPoint.position, attackDirection, out hit, weaponSetting.attackDistance))
+        {
+            impactMemoryPool.SpawnImpact(hit);
+        }
+        Debug.DrawRay(bulletSpawnPoint.position, attackDirection * weaponSetting.attackDistance, Color.blue);
     }
 }
